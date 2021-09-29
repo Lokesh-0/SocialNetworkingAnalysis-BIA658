@@ -1,0 +1,245 @@
+---
+title: "BIA-658 Lab 1 Exercises"
+author: "Lokesh Mangireddygari"
+output: html_document
+---
+**Note**:   
+
+- Submit it as a HTML file (Knit to HTML) as HW1.
+- Make sure you that the `Lab-1-Data/` folder is in the same directory of the Rmd file. 
+
+```{r, results='hide', message=FALSE, warning=FALSE}
+#install.packages("tidyverse") #install packages before loading them if you haven't done so
+#install.packages("igraph")
+#install.packages("rlang")
+#install.packages("ggplot2")
+library(igraph)
+library(tidyverse)
+library(ggplot2)
+```
+
+
+Q1:  
+Assign [100, -50, 20, -20, 40] to vector c1, [-214, -150, 10, -35, 10] to vector c2.   
+Use the weekdays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] to name both vectors. 
+
+Finally, add up the third element from c1 and second element from c2.
+
+```{r}
+# Write your code here
+c1 <- c(100,-50,20,-20,40)
+c2 <- c(-214, -150, 10, -35, 10)
+
+weekdays <- c('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday')
+names(c1) <- weekdays
+names(c2) <- weekdays
+c1
+c2
+result<-c1[3]+c2[2]
+result
+
+```
+
+Q2:   
+Assign value [460, 300, 200, 470, 300, 160] to a vector c1. Use this vector to build a 3x2 matrix. The row name is [“A", "B", "C"], the col name is [“D”, “E”]. 
+
+Next step, get the sum of each col, name it as “Sum_col”, as well as the sum of each row, called “Sum_row”. Then, bind the new row and col to the original matrix.
+
+Finally, select out the element at 4th row and 3nd col in this new matrix.
+
+```{r}
+# Write your code here
+#Assign  the values to the vector (VectorC1)
+vectorC <- c(460, 300, 200, 470, 300, 160)
+#build a 3x2 matrix
+Lab1 <- matrix (vectorC, nrow = 3, ncol =2)
+Lab1
+#Assign the row names and column names to the 3x2 matrix
+rownames(Lab1) <- c("A", "B", "C")
+colnames(Lab1) <- c("D", "E")
+Lab1
+#Sum of Rows
+Sum_row <- rowSums(Lab1)
+Lab1 <-cbind(Lab1, Sum_row)
+Lab1
+Sum_Col <- colSums(Lab1)
+Lab1 <-rbind(Lab1, Sum_Col)
+Lab1
+Lab1[4,3]
+```
+
+
+Q3:   
+Write a function definition for fun_1().
+
+* One input argument, num_views
+
+* If num_views is greater than 15, the function prints out "Nice job" and returns num_views. 
+
+* Otherwise, the function prints out "Bad for you" and returns 0.
+
+* Finally, call the function and apply it on the following vector: (16, 19, 3, 25, 12, 17, 4)
+
+```{r}
+# Write your code here
+fun_1 <- function(num_views) {
+ if(num_views>15){
+ print("nicejob")
+ return(num_views)
+ }
+ else {
+ print("bad for you")
+ return(0)
+ }
+}
+
+for (a in c(16,19,3,25,12,17,4)) {
+ fun_1(a)
+}
+
+
+```
+
+Q4:  
+
+The FizzBuzz test is a popular test that companies use to screen applicants who claim they can code. A surprising number of applicants (some claim 99%) would fail the test. 
+
+Write a program in R that prints the numbers from 1 to 100. But for multiples of three print “Fizz” instead of the number and for the multiples of five print “Buzz”. For numbers which are multiples of both three and five print “FizzBuzz”. The output should look like
+
+[1] 1  
+[1] 2  
+[1] "Fizz"  
+[1] 4  
+[1] "Buzz"  
+[1] "Fizz"  
+[1] 7  
+[1] 8  
+[1] "Fizz"  
+[1] "Buzz"  
+[1] 11  
+[1] "Fizz"  
+[1] 13  
+[1] 14  
+[1] "FizzBuzz"  
+[1] 16  
+
+Hint: use %% to check divisibility, e.g., x%%5 == 0 means x is divisible by 5 
+
+```{r}
+# Write your code here
+for (a in 1:100) {
+ if(a %% 15 == 0){
+ print("Fizz Buzz")
+ }
+ else if(a %% 3 == 0){
+ print("Buzz")
+ }
+ else if(a %% 5 == 0){
+ print("Fizz")
+ }
+ else{
+ print(a)
+ }
+}
+
+```
+Q5:   
+Here is your first challenge of Tidyverse. Load the `MarathonData.csv` dataset. Remember the three function we just introduced? Time to apply them on this new set!
+- select all the observations whose Category is M40
+- find the median value of Marathon time and maximum value of km4week within each class, saving them into medianTime and maxWeeks, respectively
+- sort in descending order by that maxWeeks
+- create a bar plot to show the median Marathon time by class
+
+```{r echo = T, message=FALSE}
+MarathonData <- read.csv("/Users/lokeshreddy/Downloads/Social Networks/Lab-1-Data/MarathonData.csv") 
+#make sure the dataset is in your working directory
+# Write your code here
+subset(MarathonData,Category == 'M40')
+challenge1 <- MarathonData %>%
+              group_by(Class) %>%
+              summarise(maxWeeks = max(km4week),medianTime = median(MarathonTime))
+challenge1
+challenge2 <- challenge1 %>%
+                   arrange(desc(maxWeeks))
+challenge2
+#BAR PLOT used GGPLOT
+ggplot(challenge1, aes(x=Class, y=medianTime)) + geom_col(color = 'red')
+
+```
+
+
+
+Q6:Explore the organizational collaboration network.
+The network information is stored in Org.csv. 
+
+Tasks:
+-Create a graph object from the csv file. 
+ -- Specify if the edges are directed or undirected (make a judgement yourself).
+ -- Name the nodes with column/row names
+-Plot the network, with the circle layout, node size as 10 and node label as blue
+-Find the diameter of the network (include both your code and result)
+-Find the longest path in the network (include both code and result)
+
+```{r echo = T, message=FALSE}
+# Write your code here
+OrgDataLoad <- read.csv("/Users/lokeshreddy/Downloads/Social Networks/Lab-1-Data/Org.csv")
+GraphObject <- graph.data.frame(OrgDataLoad, directed = TRUE)
+GraphObject
+OrgDataLoadMatrix <- as.matrix(OrgDataLoad[-2])
+OrgDataLoadMatrix #As I Observe Since The MAtrix Looks asymmentric as per my knowledge, i guess this is directed
+row.names(OrgDataLoadMatrix)<-colnames(OrgDataLoadMatrix)
+Network<-graph_from_adjacency_matrix(OrgDataLoadMatrix, mode= "directed")
+#PLOT
+plot(Network,edge.color="red",edge.width=E(Network)$weight,layout=layout.circle,edge.arrow.size=0.5,vertex.size=10, vertex.label.color="blue")
+#DIAMETER
+diameter(Network,directed=TRUE)
+#LONGESTPATH
+get_diameter(Network,directed=TRUE)
+```
+Q7:Explore CEO personal networks 
+The edges are stored in CEOs-EDGES.csv. The network is undirected and weighted.
+Node attributes are stored in CEOs-ARRT.csv. 
+The attributes include node names, gender and whether the company is a Fortune500 company. 
+
+Tasks:
+-Create a graph object from the network edges.
+-Add node attributes: node names, gender  the nodes with the column/role names.
+-Add edge attributes: edge weight
+-Plot the network, with node colors indicating gender, node shape indicating whether the company is a Fortune500 and edge with showing edge weights
+-Answer in one sentence: What can you tell about the network?
+
+```{r echo = T, message=FALSE}
+# Write your code here
+#LOAD DATA
+EdgesData <- read.csv("/Users/lokeshreddy/Downloads/Social Networks/Lab-1-Data/CEOs-EDGES.csv")
+EdgesData
+ArrtData <- read.csv("/Users/lokeshreddy/Downloads/Social Networks/Lab-1-Data/CEOs-ARRT.csv")
+ArrtData
+GraphObjectA <- graph.data.frame(EdgesData, directed = FALSE)
+GraphObjectA
+V(GraphObjectA)$name <- c(ArrtData$Node)
+GraphObjectA <- set_vertex_attr(GraphObjectA,'Fortune.500',index=V(GraphObjectA)$name,ArrtData$Fortune.500)
+get.vertex.attribute(GraphObjectA,'Fortune.500')
+GraphObjectA <- set_vertex_attr(GraphObjectA,'gender',index=V(GraphObjectA)$name,ArrtData$Gender)
+get.vertex.attribute(GraphObjectA, 'gender')
+GraphObjectA <- set_edge_attr(GraphObjectA,'Weight',index=E(GraphObjectA),EdgesData$Weight)
+get.edge.attribute(GraphObjectA,'Weight')
+
+
+#FORTUNE500 OR NOT
+V(GraphObjectA)$shape=V(GraphObjectA)$Fortune.500
+#FORTUNE500
+V(GraphObjectA)$shape=gsub(1,"rectangle",V(GraphObjectA)$shape) 
+#NOTFORTUNE500  
+V(GraphObjectA)$shape=gsub(0,"circle",V(GraphObjectA)$shape) 
+#Gender: M:Male or F:Female
+V(GraphObjectA)$color=V(GraphObjectA)$gender
+#MALE
+V(GraphObjectA)$color=gsub("M","red",V(GraphObjectA)$color) 
+#FEMALE
+V(GraphObjectA)$color=gsub("F","blue",V(GraphObjectA)$color) 
+#PLOT
+plot(GraphObjectA, layout=layout.fruchterman.reingold,vertex.label= V(GraphObjectA)$Node,vertices.shape=V(GraphObjectA)$shape,vertices.color=V(GraphObjectA)$color,  edge.arrow.size=0.5,vertex.size=10,edge.label=EdgesData$Weight)
+
+#Its More like distributed Network as of my knowledge and I dont think its centralized since there are many connections to join all the fortune 500 companies like ceo-12, ceo-8 and ceo-1. 
+```
