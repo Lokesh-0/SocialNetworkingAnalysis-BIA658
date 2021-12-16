@@ -1,0 +1,118 @@
+---
+title: "BIA-658 Lab 2 Exercises"
+author: "Lokesh Mangireddygari"
+output: html_document
+---
+**Note**:   
+
+- Submit it as a HTML file (Knit to HTML) as HW2.
+- Make sure you that the `Lab2-Data/` folder is in the same directory of the Rmd file. 
+- To read more about the Marvel network, check out this fun article: https://arxiv.org/pdf/cond-mat/0202174.pdf
+
+```{r, results='hide', message=FALSE, warning=FALSE}
+library(igraph)
+library(tidyverse)
+```
+
+Q1. The Marvel network data contains character relationships within the Marvel comic book universe (beginning in 1961 and ending around 1999/2000), compiled by Rosselló, Alberich, and Miro from Russ Chappell's from Russ Chappell's Marvel Chronology Project.
+
+-use marvel-unimodal-edges.csv in the marvel folder
+-load the data as a graph object in igraph 
+-add edge weights as an edge attribute
+-plot the network
+
+```{r}
+# Write your code here
+marvel <- read.csv("/Users/lokeshreddy/Downloads/Social Networks/Lab2-Data/marvel/marvel-unimodal-edges.csv")
+head(marvel)
+marvelComics<-as.matrix(marvel[,1:2])
+head(marvelComics)
+marvellight<-graph_from_edgelist(marvelComics, directed = F)
+marvellight <- set_edge_attr(marvellight, "weight", index=E(marvellight),value = marvel[,3])
+is.weighted(marvellight)
+marvellight
+E(marvellight)$weight <- marvel$Weight
+#Plot the network
+plot(marvellight,layout=layout.fruchterman.reingold,vertex.size=10,vertex.color="blue",
+     vertex.label.cex=0.8,vertex.label.color="black",vertex.label.font=1,
+     edge.width = E(marvellight)$weight*0.2)
+```
+
+Q2. Obtain the degree distribution of the marvel network; plot the network's degree distribution and calculate the degree centralization of the network. What can you conclude?(Answer the last question in a sentence starting with # to comment it off)
+
+```{r}
+
+# Write your code here
+
+degreedistribution <- degree_distribution(marvellight)
+highest_degree <- length(degreedistribution)-1
+names(degreedistribution) <- 0:highest_degree
+degreedistribution
+degree1<- degree(marvellight) 
+degree2 <- as.data.frame(degree1)
+ggplot(degree2,aes(degree1))+geom_histogram(bins=max(degree1),binwidth = 1) 
+print("Degree Centralization:")
+centralization.degree(marvellight)$centralization
+ 
+# As of my knowledge i dont think its centralized network since there are like 4-5 nodes(Captain America, Spider man,.....) with almost same number of connections(if not equal they are nearer mainly captain america and spider man), and while we check the graph we can see most of the marvel characters have less connections(as of the graph), and we can says its asymmetric 
+
+```
+
+
+Q3. Which nodes(s) are most central in the network in terms of degree, closeness, betweenness and eigenvector centrality? What can you conclude? (Answer the last question in a sentence starting with # to comment it off)
+
+```{r}
+# Write your code here
+print("Degree Centarlity:")
+degree(marvellight)[degree(marvellight)==max(degree(marvellight))] 
+print("Closeness Centarlity:")
+closeness(marvellight)[closeness(marvellight)==max(closeness(marvellight))] 
+print("Betweenness Centarlity:")
+betweenness(marvellight)[betweenness(marvellight)==max(betweenness(marvellight))] 
+print("EigenVector Centarlity:")
+evcent(marvellight)$vector[evcent(marvellight)$vector==max(evcent(marvellight)$vector)] 
+
+#As an marvel fan and using the calculations that i got, I would say Captain america has more degree of centrality than rest of the characters in the marvel Universe, most of the characters are associated with him and might have choose him as a leader among themselves, maybe it would make him to have more centrality than any others, Coming to CLOSNESS centrality Vision can be correct because he is from another planet and there would be shortest distances between other characters, and since vision is from other dimension it might be the bridge between the one group of people on earth to the other people in his dimension so i guess Vision has more betweenness centrality, since captain america has more influence on the whole marvel universe, so the captain america node has more importance than other nodes.
+```
+
+Q4. Calculate the density, clustering and average path lengths of the network. What can you conclude? (Answer the last question in a sentence starting with # to comment it off)   
+
+```{r}
+# Write your code here
+print("Density:")
+graph.density(marvellight)
+print("Clustering:")
+transitivity(marvellight)
+print("Mean Distance:")
+mean_distance(marvellight)
+
+#Since there are 100s of characters, the connections between all individuals would be less so the density is around 0.18 (In general aspect this may happen cause some of the characters might not have mutual understanding), Clustering at 0.47, i would say there arent much community like connections between the characters, but there might be some formed groups, by looking at the mean distance i would say every node in the network has at least one connection with the other character or more  
+```
+
+Q5. Compare the Marvel network to a random network with the same size and density. What can you conclude? (Answer the last question in a sentence starting with # to comment it off) (Hint: simulate a random network and compare its clustering and transitivity with the Marvel network) 
+
+```{r echo = T}
+# Write your code here
+#Count
+print("V and e count of marvel network:")
+vcount(marvellight)
+ecount(marvellight)
+
+#v count and ecount are 327 and 9891 
+#Creating a random network
+prototypeNetwork <- erdos.renyi.game(327, 9891,type="gnm") 
+plot(prototypeNetwork,layout=layout.circle)
+# after creating the random network, cross verifying with the actual network to check if the dimensions matches or not
+print("V and e count of marvel network:")
+vcount(prototypeNetwork)
+ecount(prototypeNetwork)
+#Calculating the density, clustering and mean distance of the network
+print("Density:")
+graph.density(prototypeNetwork)
+print("Clustering:")
+transitivity(prototypeNetwork)
+print("Mean Distance:")
+mean_distance(prototypeNetwork)
+
+#Since the random network is generated with the same density of the marvel network, both the density matches, and coming to the transitivity we can see its way more lower compared to the marvel network, and the mean distance looks similar for both the networks and by all these calculations and my knowledge i would say marvel is a small world network
+```
